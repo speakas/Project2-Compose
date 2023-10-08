@@ -1,5 +1,15 @@
+markdown
+
+# Docker CLI to Docker-Compose Transition
+
+## 1. Creating Docker Network
+
+Docker CLI Command:
+```bash
 docker network create jenkins
-2. Start Docker-In-Docker Container:
+
+2. Starting Docker-In-Docker Container
+Docker CLI Command:
 
 bash
 
@@ -13,28 +23,31 @@ docker run --name dind -d \
 -v jenkins-data:/var/jenkins_home \
 docker:dind
 
-    Docker-Compose Equivalent:
+Docker-Compose Equivalent:
 
-    yaml
+yaml
 
-    services:
-      dind:
-        image: docker:dind
-        privileged: true
-        environment:
-          DOCKER_TLS_CERTDIR: "/certs"
-        volumes:
-          - "docker-certs-ca:/certs/ca"
-          - "docker-certs-client:/certs/client"
-          - "jenkins-data:/var/jenkins_home"
+services:
+  dind:
+    image: docker:dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: "/certs"
+    volumes:
+      - "docker-certs-ca:/certs/ca"
+      - "docker-certs-client:/certs/client"
+      - "jenkins-data:/var/jenkins_home"
 
-        --name dind: Names the container dind. Equivalent to the service name dind in Docker Compose.
-        --network jenkins --network-alias docker: Places the container in the jenkins network with an alias docker. In Docker Compose, the dind service is automatically placed in the default network with other services.
-        --privileged: Runs the container in privileged mode.
-        -e DOCKER_TLS_CERTDIR=/certs: Sets an environment variable. Same is set under environment in Docker Compose.
-        -v ...: Binds volumes to the container. Similar bindings are set under volumes in Docker Compose.
+Explanation:
 
-3. Start Jenkins Container:
+    --name dind: Names the container dind. Equivalent to the service name dind in Docker Compose.
+    --network jenkins --network-alias docker: Places the container in the jenkins network with an alias docker. In Docker Compose, the dind service is automatically placed in the default network with other services.
+    --privileged: Runs the container in privileged mode.
+    -e DOCKER_TLS_CERTDIR=/certs: Sets an environment variable. Same is set under environment in Docker Compose.
+    -v ...: Binds volumes to the container. Similar bindings are set under volumes in Docker Compose.
+
+3. Starting Jenkins Container
+Docker CLI Command:
 
 bash
 
@@ -51,9 +64,9 @@ docker container run --name jenkins \
 -v /usr/bin/docker:/usr/bin/docker \
 jenkins/jenkins:lts-jdk11
 
-    Docker-Compose Equivalent:
+Docker-Compose Equivalent:
 
-    yaml
+yaml
 
 services:
   jenkins:
@@ -65,6 +78,8 @@ services:
     volumes:
       - "docker-certs-client:/certs/client:ro"
       - "jenkins-data:/var/jenkins_home"
+
+Explanation:
 
     --name jenkins: Names the container jenkins. Equivalent to the service name jenkins in Docker Compose.
     --network jenkins: Places the container in the jenkins network. In Docker Compose, the jenkins service is automatically placed in the default network with other services.
