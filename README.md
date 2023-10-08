@@ -1,5 +1,3 @@
-markdown
-
 # Docker CLI to Docker-Compose Transition
 
 ## 1. Creating Docker Network
@@ -7,12 +5,13 @@ markdown
 Docker CLI Command:
 ```bash
 docker network create jenkins
+```
 
-2. Starting Docker-In-Docker Container
-Docker CLI Command:
+## 2. Starting Docker-In-Docker Container
 
-bash
+### Docker CLI Command:
 
+```bash
 docker run --name dind -d \
 --network jenkins --network-alias docker \
 --privileged \
@@ -22,11 +21,11 @@ docker run --name dind -d \
 -v docker-certs-client:/certs/client \
 -v jenkins-data:/var/jenkins_home \
 docker:dind
+```
 
-Docker-Compose Equivalent:
+### Docker-Compose Equivalent:
 
-yaml
-
+```yaml
 services:
   dind:
     image: docker:dind
@@ -37,20 +36,20 @@ services:
       - "docker-certs-ca:/certs/ca"
       - "docker-certs-client:/certs/client"
       - "jenkins-data:/var/jenkins_home"
+```
+#### Explanation:
 
-Explanation:
+- `--name dind`: Names the container `dind`. Equivalent to the service name `dind` in Docker Compose.
+- `--network jenkins --network-alias docker`: Places the container in the `jenkins` network with an alias `docker`. In Docker Compose, the `dind` service is automatically placed in the default network with other services.
+- `--privileged`: Runs the container in privileged mode.
+- `-e DOCKER_TLS_CERTDIR=/certs`: Sets an environment variable. Same is set under `environment` in Docker Compose.
+- `-v ...`: Binds volumes to the container. Similar bindings are set under `volumes` in Docker Compose.
 
-    --name dind: Names the container dind. Equivalent to the service name dind in Docker Compose.
-    --network jenkins --network-alias docker: Places the container in the jenkins network with an alias docker. In Docker Compose, the dind service is automatically placed in the default network with other services.
-    --privileged: Runs the container in privileged mode.
-    -e DOCKER_TLS_CERTDIR=/certs: Sets an environment variable. Same is set under environment in Docker Compose.
-    -v ...: Binds volumes to the container. Similar bindings are set under volumes in Docker Compose.
+## 3. Starting Jenkins Container
 
-3. Starting Jenkins Container
-Docker CLI Command:
+### Docker CLI Command:
 
-bash
-
+```bash
 docker container run --name jenkins \
 --detach --restart unless-stopped \
 --network jenkins \
@@ -63,11 +62,11 @@ docker container run --name jenkins \
 --publish 8080:8080 --publish 50000:50000 \
 -v /usr/bin/docker:/usr/bin/docker \
 jenkins/jenkins:lts-jdk11
+```
 
-Docker-Compose Equivalent:
+### Docker-Compose Equivalent:
 
-yaml
-
+```yaml
 services:
   jenkins:
     image: jenkins/jenkins:lts
@@ -78,11 +77,12 @@ services:
     volumes:
       - "docker-certs-client:/certs/client:ro"
       - "jenkins-data:/var/jenkins_home"
+```
+#### Explanation:
 
-Explanation:
+- `--name jenkins`: Names the container `jenkins`. Equivalent to the service name `jenkins` in Docker Compose.
+- `--network jenkins`: Places the container in the `jenkins` network. In Docker Compose, the `jenkins` service is automatically placed in the default network with other services.
+- `--env ...`: Sets environment variables. Same are set under `environment` in Docker Compose.
+- `--volume ...`: Binds volumes to the container. Similar bindings are set under `volumes` in Docker Compose.
+- `--publish 8080:8080 --publish 50000:50000`: Publishes container ports to host ports. Similar mapping is done with `ports` in Docker Compose.
 
-    --name jenkins: Names the container jenkins. Equivalent to the service name jenkins in Docker Compose.
-    --network jenkins: Places the container in the jenkins network. In Docker Compose, the jenkins service is automatically placed in the default network with other services.
-    --env ...: Sets environment variables. Same are set under environment in Docker Compose.
-    --volume ...: Binds volumes to the container. Similar bindings are set under volumes in Docker Compose.
-    --publish 8080:8080 --publish 50000:50000: Publishes container ports to host ports. Similar mapping is done with ports in Docker Compose.
