@@ -33,7 +33,6 @@ services:
       - DOCKER_HOST=tcp://dind:2375
     networks:
       - jenkins_dind
-    user: root
 
 networks:
   jenkins_dind:
