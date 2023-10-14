@@ -33,7 +33,7 @@ services:
       - DOCKER_HOST=tcp://dind:2375
     networks:
       - jenkins_dind
-      
+
 networks:
   jenkins_dind:
     driver: bridge
