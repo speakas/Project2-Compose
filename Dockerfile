@@ -1,18 +1,15 @@
-from jenkins/jenkins:lts
- 
+FROM jenkins/jenkins:lts
+
 USER root
 
-RUN apt-get update -qq && apt-get install -qqy apt-transport-https ca-certificates curl gnupg2 software-properties-common
+#  add Docker repository
+RUN apt-get update && \
+    apt-get -y install lsb-release curl && \
+    curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc https://download.docker.com/linux/debian/gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.asc] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli && \
+    rm -rf /var/lib/apt/lists/*  
 
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+USER jenkins
 
-RUN add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/debian \
-   $(lsb_release -cs) \
-   stable"
-
-RUN apt-get update -qq && apt-get install -qqy docker-ce docker-ce-cli containerd.io
-
-RUN usermod -aG docker jenkins
-
-ENTRYPOINT ["/bin/sh", "-c", "service docker start && /sbin/tini -- /usr/local/bin/jenkins.sh"]
